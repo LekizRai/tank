@@ -1,4 +1,4 @@
-export interface IBulletConstructor {
+export default interface IBulletConstructor {
   scene: Phaser.Scene;
   rotation: number;
   x: number;

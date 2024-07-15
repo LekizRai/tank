@@ -1,6 +1,6 @@
-import { IBulletConstructor } from '../interfaces/bullet.interface';
+import IBulletConstructor from '../interfaces/bullet.interface';
 
-export class Bullet extends Phaser.GameObjects.Image {
+export default class Bullet extends Phaser.GameObjects.Image {
   body: Phaser.Physics.Arcade.Body;
 
   private bulletSpeed: number;

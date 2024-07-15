@@ -1,11 +1,9 @@
-export class BootScene extends Phaser.Scene {
+export default class PreloadScene extends Phaser.Scene {
     private loadingBar: Phaser.GameObjects.Graphics
     private progressBar: Phaser.GameObjects.Graphics
 
     constructor() {
-        super({
-            key: 'BootScene',
-        })
+        super('preload')
     }
 
     preload(): void {
@@ -44,7 +42,7 @@ export class BootScene extends Phaser.Scene {
     }
 
     update(): void {
-        this.scene.start('MenuScene')
+        this.scene.start('menu')
     }
 
     private createLoadingGraphics(): void {

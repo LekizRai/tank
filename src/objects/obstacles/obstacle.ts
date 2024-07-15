@@ -1,23 +1,23 @@
-import { IImageConstructor } from '../../interfaces/image.interface';
+import IImageConstructor from '../../interfaces/image.interface'
 
-export class Obstacle extends Phaser.GameObjects.Image {
-  body: Phaser.Physics.Arcade.Body;
+export default class Obstacle extends Phaser.GameObjects.Image {
+    body: Phaser.Physics.Arcade.Body
 
-  constructor(aParams: IImageConstructor) {
-    super(aParams.scene, aParams.x, aParams.y, aParams.texture);
+    constructor(aParams: IImageConstructor) {
+        super(aParams.scene, aParams.x, aParams.y, aParams.texture)
 
-    this.initImage();
-    this.scene.add.existing(this);
-  }
+        this.initImage()
+        this.scene.add.existing(this)
+    }
 
-  private initImage(): void {
-    // image
-    this.setOrigin(0, 0);
+    private initImage(): void {
+        // image
+        this.setOrigin(0, 0)
 
-    // physics
-    this.scene.physics.world.enable(this);
-    this.body.setImmovable(true);
-  }
+        // physics
+        this.scene.physics.world.enable(this)
+        this.body.setImmovable(true)
+    }
 
-  update(): void {}
+    update(): void {}
 }

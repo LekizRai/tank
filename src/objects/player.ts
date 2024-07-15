@@ -1,7 +1,7 @@
-import { Bullet } from './bullet'
-import { IImageConstructor } from '../interfaces/image.interface'
+import Bullet from './Bullet'
+import IImageConstructor from '../interfaces/image.interface'
 
-export class Player extends Phaser.GameObjects.Image {
+export default class Player extends Phaser.GameObjects.Image {
     body: Phaser.Physics.Arcade.Body
 
     // variables
@@ -21,6 +21,7 @@ export class Player extends Phaser.GameObjects.Image {
     private rotateKeyLeft: Phaser.Input.Keyboard.Key
     private rotateKeyRight: Phaser.Input.Keyboard.Key
     private shootingKey: Phaser.Input.Keyboard.Key
+    private pointer: Phaser.Input.Pointer
 
     public getBullets(): Phaser.GameObjects.Group {
         return this.bullets
@@ -61,22 +62,11 @@ export class Player extends Phaser.GameObjects.Image {
         })
 
         // input
-        const cursors = this.scene.input.keyboard?.createCursorKeys()
-        if (cursors) {
-            this.cursors = cursors
-        }
-        const rotateKeyLeft = this.scene.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.A)
-        if (rotateKeyLeft) {
-            this.rotateKeyLeft = rotateKeyLeft
-        }
-        const rotateKeyRight = this.scene.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.D)
-        if (rotateKeyRight) {
-            this.rotateKeyRight = rotateKeyRight
-        }
-        const shootingKey = this.scene.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE)
-        if (shootingKey) {
-            this.shootingKey = shootingKey
-        }
+        this.pointer = this.scene.input.activePointer
+        this.cursors = this.scene.input.keyboard?.createCursorKeys()!
+        this.rotateKeyLeft = this.scene.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.A)!
+        this.rotateKeyRight = this.scene.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.D)!
+        this.shootingKey = this.scene.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE)!
 
         // physics
         this.scene.physics.world.enable(this)
@@ -100,39 +90,54 @@ export class Player extends Phaser.GameObjects.Image {
     private handleInput() {
         // move tank forward
         // small corrections with (- MATH.PI / 2) to align tank correctly
-        if (this.cursors.up.isDown) {
-            this.scene.physics.velocityFromRotation(
-                this.rotation - Math.PI / 2,
-                this.speed,
-                this.body.velocity
+        const x = this.pointer.worldX
+        const y = this.pointer.worldY
+        this.barrel.angle = Phaser.Math.RadToDeg(
+            Phaser.Math.Angle.Between(this.x, this.y, x, y) + Math.PI / 2
+        )
+
+        if (this.pointer.rightButtonDown()) {
+            const x = this.pointer.worldX
+            const y = this.pointer.worldY
+            this.angle = Phaser.Math.RadToDeg(
+                Phaser.Math.Angle.Between(this.x, this.y, x, y) - Math.PI / 2
             )
-        } else if (this.cursors.down.isDown) {
-            this.scene.physics.velocityFromRotation(
-                this.rotation - Math.PI / 2,
-                -this.speed,
-                this.body.velocity
-            )
-        } else {
-            this.body.setVelocity(0, 0)
+            this.scene.physics.velocityFromAngle(this.angle + 90, this.speed, this.body.velocity)
         }
 
-        // rotate tank
-        if (this.cursors.left.isDown) {
-            this.rotation -= 0.02
-        } else if (this.cursors.right.isDown) {
-            this.rotation += 0.02
-        }
+        // if (this.cursors.up.isDown) {
+        //     this.scene.physics.velocityFromRotation(
+        //         this.rotation - Math.PI / 2,
+        //         this.speed,
+        //         this.body.velocity
+        //     )
+        // } else if (this.cursors.down.isDown) {
+        //     this.scene.physics.velocityFromRotation(
+        //         this.rotation - Math.PI / 2,
+        //         -this.speed,
+        //         this.body.velocity
+        //     )
+        // } else {
+        //     this.body.setVelocity(0, 0)
+        // }
 
-        // rotate barrel
-        if (this.rotateKeyLeft.isDown) {
-            this.barrel.rotation -= 0.05
-        } else if (this.rotateKeyRight.isDown) {
-            this.barrel.rotation += 0.05
-        }
+        // // rotate tank
+        // if (this.cursors.left.isDown) {
+        //     this.rotation -= 0.02
+        // } else if (this.cursors.right.isDown) {
+        //     this.rotation += 0.02
+        // }
+
+        // // rotate barrel
+        // if (this.rotateKeyLeft.isDown) {
+        //     this.barrel.rotation -= 0.05
+        // } else if (this.rotateKeyRight.isDown) {
+        //     this.barrel.rotation += 0.05
+        // }
     }
 
     private handleShooting(): void {
-        if (this.shootingKey.isDown && this.scene.time.now > this.lastShoot) {
+        if (this.pointer.leftButtonDown() && this.scene.time.now > this.lastShoot) {
             this.scene.cameras.main.shake(20, 0.005)
             this.scene.tweens.add({
                 targets: this,
@@ -180,7 +185,7 @@ export class Player extends Phaser.GameObjects.Image {
         } else {
             this.health = 0
             this.active = false
-            this.scene.scene.start('MenuScene')
+            this.scene.scene.start('menu')
         }
     }
 }
