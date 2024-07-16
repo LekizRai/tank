@@ -8,7 +8,7 @@ export default class PreloadScene extends Phaser.Scene {
 
     preload(): void {
         // set the background, create the loading and progress bar
-        this.cameras.main.setBackgroundColor(0x000000)
+        // this.cameras.main.setBackgroundColor(0x000000)
         this.createLoadingGraphics()
 
         // pass value to change the loading bar fill
@@ -39,6 +39,14 @@ export default class PreloadScene extends Phaser.Scene {
 
         // load our package
         this.load.pack('preload', './assets/pack.json', 'preload')
+        this.load.image('gun-1', './assets/images/gun-1.png')
+        this.load.image('hull-1', './assets/images/hull-1.png')
+        this.load.image('track-1', './assets/images/track-1.png')
+        this.load.image('bullet-1', './assets/images/bullet-1.png')
+        this.load.image('pause', './assets/images/pause.png')
+        this.load.image('replay', './assets/images/replay.png')
+        this.load.image('menu', './assets/images/menu.png')
+        this.load.image('board', './assets/images/board.png')
     }
 
     update(): void {

@@ -13,6 +13,8 @@ export default class GameplayScene extends Phaser.Scene {
 
     private target: Phaser.Math.Vector2
 
+    private pointer: Phaser.Input.Pointer
+
     constructor() {
         super('gameplay')
     }
@@ -20,9 +22,8 @@ export default class GameplayScene extends Phaser.Scene {
     init(): void {}
 
     create(): void {
-        window.addEventListener('contextmenu', (e: Event) => {
-            e.preventDefault()
-        })
+        this.cameras.main.setBackgroundColor(0xffffff)
+        
         // create tilemap from tiled JSON
         this.map = this.make.tilemap({ key: 'levelMap' })
 
@@ -92,6 +93,9 @@ export default class GameplayScene extends Phaser.Scene {
         }, this)
 
         this.cameras.main.startFollow(this.player)
+
+        this.add.zone(0, 0, 1200, 1600)
+        this.scene.launch('pause')
     }
 
     update(): void {
@@ -101,14 +105,15 @@ export default class GameplayScene extends Phaser.Scene {
             const enemy = enemyObject as Enemy
             enemy.update()
             if (this.player.active && enemy.active) {
-                const angle = Phaser.Math.Angle.Between(
+                const angle = Phaser.Math.RadToDeg(Phaser.Math.Angle.Between(
                     enemy.body.x,
                     enemy.body.y,
                     this.player.body.x,
                     this.player.body.y
-                )
+                ) + Math.PI / 2)
 
-                enemy.getBarrel().angle = (angle + Math.PI / 2) * Phaser.Math.RAD_TO_DEG
+                enemy.setGunAngle(angle)
+                // enemy.getBarrel().angle = (angle + Math.PI / 2) * Phaser.Math.RAD_TO_DEG
             }
         }, this)
     }
@@ -119,19 +124,19 @@ export default class GameplayScene extends Phaser.Scene {
 
         objects.forEach((object) => {
             if (object.type === 'player') {
-                this.player = new Player({
-                    scene: this,
-                    x: object.x,
-                    y: object.y,
-                    texture: 'tankBlue',
-                })
+                this.player = new Player(
+                    this,
+                    object.x,
+                    object.y
+                    // texture: 'tankBlue',
+                )
             } else if (object.type === 'enemy') {
-                const enemy = new Enemy({
-                    scene: this,
-                    x: object.x,
-                    y: object.y,
-                    texture: 'tankRed',
-                })
+                const enemy = new Enemy(
+                    this,
+                    object.x,
+                    object.y
+                    // texture: 'tankRed',
+                )
 
                 this.enemies.add(enemy)
             } else {
