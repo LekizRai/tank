@@ -23,7 +23,7 @@ export default class GameplayScene extends Phaser.Scene {
 
     create(): void {
         this.cameras.main.setBackgroundColor(0xffffff)
-        
+
         // create tilemap from tiled JSON
         this.map = this.make.tilemap({ key: 'levelMap' })
 
@@ -94,8 +94,15 @@ export default class GameplayScene extends Phaser.Scene {
 
         this.cameras.main.startFollow(this.player)
 
-        this.add.zone(0, 0, 1200, 1600)
-        this.scene.launch('pause')
+        this.scene.get('menu').events.on("transitiondone", () => {
+            this.scene.launch('pause')
+            // this.scene.launch('transition').bringToTop()
+        })
+        this.events.on('playerdead', () => {
+            this.scene.launch('gameover')
+            this.scene.stop('pause')
+            // console.log('gameover')
+        })
     }
 
     update(): void {
@@ -105,12 +112,15 @@ export default class GameplayScene extends Phaser.Scene {
             const enemy = enemyObject as Enemy
             enemy.update()
             if (this.player.active && enemy.active) {
-                const angle = Phaser.Math.RadToDeg(Phaser.Math.Angle.Between(
-                    enemy.body.x,
-                    enemy.body.y,
-                    this.player.body.x,
-                    this.player.body.y
-                ) + Math.PI / 2)
+                const angle = Phaser.Math.RadToDeg(
+                    Phaser.Math.Angle.Between(
+                        enemy.body.x,
+                        enemy.body.y,
+                        this.player.body.x,
+                        this.player.body.y
+                    ) +
+                        Math.PI / 2
+                )
 
                 enemy.setGunAngle(angle)
                 // enemy.getBarrel().angle = (angle + Math.PI / 2) * Phaser.Math.RAD_TO_DEG
@@ -168,5 +178,23 @@ export default class GameplayScene extends Phaser.Scene {
     private playerBulletHitEnemy(bullet: any, enemy: any): void {
         bullet.destroy()
         enemy.updateHealth()
+    }
+
+    public doTransition(sceneKey: string): void {
+        const fx = this.cameras.main.postFX.addWipe(0.3, 1, 1)
+        this.scene.transition({
+            target: 'menu',
+            duration: 2000,
+            allowInput: false,
+            moveBelow: true,
+            onUpdate: (progress: number) => {
+                fx.progress = progress
+            },
+        })
+        console.log(12)
+    }
+
+    public startPauseScene(): void {
+        this.scene.launch('pause')
     }
 }

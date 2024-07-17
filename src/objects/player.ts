@@ -204,7 +204,8 @@ export default class Player extends Phaser.GameObjects.Container {
         } else {
             this.health = 0
             this.active = false
-            this.scene.scene.start('menu')
+            this.scene.events.emit("playerdead")
+            // this.scene.scene.start('menu')
         }
     }
 }
