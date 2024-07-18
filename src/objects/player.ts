@@ -1,5 +1,7 @@
 import Bullet from './Bullet'
 import IImageConstructor from '../interfaces/image.interface'
+import GameEventEmitter from './GameEventEmitter'
+import ScoreManager from './ScoreManager'
 
 export default class Player extends Phaser.GameObjects.Container {
     body: Phaser.Physics.Arcade.Body
@@ -15,8 +17,9 @@ export default class Player extends Phaser.GameObjects.Container {
     private tankLeftTrack: Phaser.GameObjects.Image
     private tankRightTrack: Phaser.GameObjects.Image
 
+    private directionArrow: Phaser.GameObjects.Image
+
     // children
-    private barrel: Phaser.GameObjects.Image
     private lifeBar: Phaser.GameObjects.Graphics
 
     // game objects
@@ -24,51 +27,49 @@ export default class Player extends Phaser.GameObjects.Container {
 
     // input
     private cursors: Phaser.Types.Input.Keyboard.CursorKeys
-    private rotateKeyLeft: Phaser.Input.Keyboard.Key
-    private rotateKeyRight: Phaser.Input.Keyboard.Key
-    private shootingKey: Phaser.Input.Keyboard.Key
     private pointer: Phaser.Input.Pointer
 
-    public getBullets(): Phaser.GameObjects.Group {
-        return this.bullets
-    }
+    private flashSprite: Phaser.GameObjects.Sprite
+
+    private addTrackTime: number
+
+    private eventEmitter: GameEventEmitter
 
     constructor(scene: Phaser.Scene, x: number, y: number) {
         super(scene, x, y)
 
         this.initTank()
         this.scene.add.existing(this)
+
+
+        this.eventEmitter = GameEventEmitter.getInstance()
+    }
+
+    public getBullets(): Phaser.GameObjects.Group {
+        return this.bullets
     }
 
     private initTank() {
+        this.flashSprite = this.scene.add.sprite(0, 0, 'gun-flash', 'gun-flash-1').setVisible(false).setDepth(100)
+
         // variables
         this.health = 1
         this.lastShoot = 0
         this.speed = 100
 
+        this.directionArrow = this.scene.add.image(0, -120, 'arrow').setScale(0.2)
         this.tankLeftTrack = this.scene.add.image(-35, -15, 'track-1').setScale(0.6)
         this.tankRightTrack = this.scene.add.image(35, -15, 'track-1').setScale(0.6)
         this.tankHull = this.scene.add.image(0, 0, 'hull-1').setScale(0.7).setOrigin(0.5, 0.6)
         this.tankBody = this.scene.add.container(0, 0)
+        this.tankBody.add(this.directionArrow)
         this.tankBody.add(this.tankLeftTrack)
         this.tankBody.add(this.tankRightTrack)
         this.tankBody.add(this.tankHull)
 
         this.tankGun = this.scene.add.image(0, 0, 'gun-1').setScale(0.7)
 
-        // this.add(this.tankLeftTrack)
-        // this.add(this.tankRightTrack)
-        // this.add(this.tankHull)
-
-        // image
-        // this.setOrigin(0.5, 0.5)
-        // this.setDepth(0)
-        // this.angle = 180
-
-        // this.barrel = this.scene.add.image(this.x, this.y, 'barrelBlue')
-        // this.barrel.setOrigin(0.5, 1)
-        // this.barrel.setDepth(1)
-        // this.barrel.angle = 180
+        this.addTrackTime = 0
 
         this.lifeBar = this.scene.add.graphics()
 
@@ -95,15 +96,18 @@ export default class Player extends Phaser.GameObjects.Container {
 
         // physics
         this.scene.physics.world.enable(this)
+        this.setSize(65, 100)
+        this.body.setSize(60, 100)
+
     }
 
-    update(): void {
+    update(time: number, timeInterval: number): void {
         if (this.active) {
             // this.barrel.x = this.x
             // this.barrel.y = this.y
             // this.lifeBar.x = this.x
             // this.lifeBar.y = this.y
-            this.handleInput()
+            this.handleInput(timeInterval)
             this.handleShooting()
         } else {
             this.destroy()
@@ -112,7 +116,7 @@ export default class Player extends Phaser.GameObjects.Container {
         }
     }
 
-    private handleInput() {
+    private handleInput(timeInterval: number) {
         this.pointer.updateWorldPoint(this.scene.cameras.main)
         let pointerAngle = Phaser.Math.RadToDeg(
             Phaser.Math.Angle.Between(
@@ -150,6 +154,14 @@ export default class Player extends Phaser.GameObjects.Container {
         } else if (this.cursors.right.isDown) {
             this.tankBody.angle += 1
         }
+
+        this.flashSprite.setX(
+            this.tankGun.x + this.x + Math.sin(Phaser.Math.DegToRad(this.tankGun.angle)) * 100
+        )
+        this.flashSprite.setY(
+            this.tankGun.y + this.y - Math.cos(Phaser.Math.DegToRad(this.tankGun.angle)) * 100
+        )
+        this.flashSprite.setRotation(this.tankGun.rotation)
     }
 
     private handleShooting(): void {
@@ -157,40 +169,29 @@ export default class Player extends Phaser.GameObjects.Container {
             (this.cursors.space.isDown || this.pointer.leftButtonDown()) &&
             this.scene.time.now > this.lastShoot
         ) {
-            // this.scene.cameras.main.shake(20, 0.005)
-            this.scene.tweens.add({
-                targets: this,
-                props: { alpha: 0.8 },
-                delay: 0,
-                duration: 5,
-                ease: 'Power1',
-                easeParams: null,
-                hold: 0,
-                repeat: 0,
-                repeatDelay: 0,
-                yoyo: true,
-                paused: false,
-            })
-
             // const vector = Phaser.Math.Angle()
-            if (this.bullets.getLength() < 10) {
+            if (this.bullets.getLength() < 10 && this.scene.time.now > this.lastShoot) {
+                this.scene.sound.play('tank-shooting', {volume: 0.3})
                 this.bullets.add(
                     new Bullet({
                         scene: this.scene,
                         rotation: this.tankGun.rotation,
-                        x: this.tankGun.x + this.x + Math.sin(Phaser.Math.DegToRad(this.tankGun.angle)) * 100,
-                        y: this.tankGun.y + this.y - Math.cos(Phaser.Math.DegToRad(this.tankGun.angle)) * 100,
+                        x: this.tankGun.x + this.x + Math.sin(this.tankGun.rotation) * 100,
+                        y: this.tankGun.y + this.y - Math.cos(this.tankGun.rotation) * 100,
                         texture: 'bullet-1',
                     })
                 )
-                this.lastShoot = this.scene.time.now + 80    
+
+                this.flashSprite.play('gun-flash').setVisible(true)
+
+                this.lastShoot = this.scene.time.now + 100
             }
         }
     }
 
     private redrawLifebar(): void {
         this.lifeBar.clear()
-        this.lifeBar.fillStyle(0xe66a28, 1)
+        this.lifeBar.fillStyle(0x0000ff, 1)
         this.lifeBar.fillRect(-50, 100, 100 * this.health, 15)
         this.lifeBar.lineStyle(2, 0xffffff)
         this.lifeBar.strokeRect(-50, 100, 100, 15)
@@ -203,9 +204,9 @@ export default class Player extends Phaser.GameObjects.Container {
             this.redrawLifebar()
         } else {
             this.health = 0
+            ScoreManager.updateHighScore()
+            this.eventEmitter.emit('playerdead')
             this.active = false
-            this.scene.events.emit("playerdead")
-            // this.scene.scene.start('menu')
         }
     }
 }

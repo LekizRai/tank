@@ -1,6 +1,8 @@
 import Player from '../objects/Player'
 import Enemy from '../objects/Enemy'
 import Obstacle from '../objects/obstacles/Obstacle'
+import GameEventEmitter from '../objects/GameEventEmitter'
+import Bullet from '../objects/Bullet'
 
 export default class GameplayScene extends Phaser.Scene {
     private map: Phaser.Tilemaps.Tilemap
@@ -15,6 +17,8 @@ export default class GameplayScene extends Phaser.Scene {
 
     private pointer: Phaser.Input.Pointer
 
+    private eventEmitter: GameEventEmitter
+
     constructor() {
         super('gameplay')
     }
@@ -22,7 +26,7 @@ export default class GameplayScene extends Phaser.Scene {
     init(): void {}
 
     create(): void {
-        this.cameras.main.setBackgroundColor(0xffffff)
+        this.cameras.main.setBackgroundColor(0x000000)
 
         // create tilemap from tiled JSON
         this.map = this.make.tilemap({ key: 'levelMap' })
@@ -46,67 +50,34 @@ export default class GameplayScene extends Phaser.Scene {
         this.physics.add.collider(this.player, this.obstacles)
 
         // collider for bullets
-        this.physics.add.collider(
-            this.player.getBullets(),
-            this.layer,
-            this.bulletHitLayer,
-            undefined,
-            this
-        )
+        this.physics.add.collider(this.player.getBullets(), this.layer, this.bulletHitLayer, undefined, this)
 
-        this.physics.add.collider(
-            this.player.getBullets(),
-            this.obstacles,
-            this.bulletHitObstacles,
-            undefined,
-            this
-        )
+        this.physics.add.collider(this.player.getBullets(), this.obstacles, this.bulletHitObstacles, undefined, this)
 
         this.enemies.getChildren().forEach((enemyObject: Phaser.GameObjects.GameObject) => {
             const enemy = enemyObject as Enemy
-            this.physics.add.overlap(
-                this.player.getBullets(),
-                enemy,
-                this.playerBulletHitEnemy,
-                undefined,
-                this
-            )
-            this.physics.add.overlap(
-                enemy.getBullets(),
-                this.player,
-                this.enemyBulletHitPlayer,
-                undefined
-            )
+            this.physics.add.overlap(this.player.getBullets(), enemy, this.playerBulletHitEnemy, undefined, this)
+            this.physics.add.overlap(enemy.getBullets(), this.player, this.enemyBulletHitPlayer, undefined, this)
 
-            this.physics.add.collider(
-                enemy.getBullets(),
-                this.obstacles,
-                this.bulletHitObstacles,
-                undefined
-            )
-            this.physics.add.collider(
-                enemy.getBullets(),
-                this.layer,
-                this.bulletHitLayer,
-                undefined
-            )
-        }, this)
+            this.physics.add.collider(enemy.getBullets(), this.obstacles, this.bulletHitObstacles, undefined, this)
+            this.physics.add.collider(enemy.getBullets(), this.layer, this.bulletHitLayer, undefined, this)
+        })
 
         this.cameras.main.startFollow(this.player)
 
-        this.scene.get('menu').events.on("transitiondone", () => {
+        this.eventEmitter = GameEventEmitter.getInstance()
+        this.eventEmitter.on('transitiondone', () => {
             this.scene.launch('pause')
-            // this.scene.launch('transition').bringToTop()
         })
-        this.events.on('playerdead', () => {
+        this.eventEmitter.on('playerdead', () => {
             this.scene.launch('gameover')
+            this.scene.pause('gameplay')
             this.scene.stop('pause')
-            // console.log('gameover')
         })
     }
 
-    update(): void {
-        this.player.update()
+    update(time: number, timeInterval: number): void {
+        this.player.update(time, timeInterval)
 
         this.enemies.getChildren().forEach((enemyObject: Phaser.GameObjects.GameObject) => {
             const enemy = enemyObject as Enemy
@@ -121,11 +92,9 @@ export default class GameplayScene extends Phaser.Scene {
                     ) +
                         Math.PI / 2
                 )
-
                 enemy.setGunAngle(angle)
-                // enemy.getBarrel().angle = (angle + Math.PI / 2) * Phaser.Math.RAD_TO_DEG
             }
-        }, this)
+        })
     }
 
     private convertObjects(): void {
@@ -134,19 +103,9 @@ export default class GameplayScene extends Phaser.Scene {
 
         objects.forEach((object) => {
             if (object.type === 'player') {
-                this.player = new Player(
-                    this,
-                    object.x,
-                    object.y
-                    // texture: 'tankBlue',
-                )
+                this.player = new Player(this, object.x, object.y)
             } else if (object.type === 'enemy') {
-                const enemy = new Enemy(
-                    this,
-                    object.x,
-                    object.y
-                    // texture: 'tankRed',
-                )
+                const enemy = new Enemy(this, object.x, object.y)
 
                 this.enemies.add(enemy)
             } else {
@@ -163,20 +122,24 @@ export default class GameplayScene extends Phaser.Scene {
     }
 
     private bulletHitLayer(bullet: any): void {
-        bullet.destroy()
+        // this.sound.play('hit-obstacle')
+        bullet.doExplosion()
     }
 
     private bulletHitObstacles(bullet: any, obstacle: any): void {
-        bullet.destroy()
+        // this.sound.play('hit-obstacle')
+        bullet.doExplosion()
     }
 
     private enemyBulletHitPlayer(bullet: any, player: any): void {
-        bullet.destroy()
+        this.sound.play('hit-tank', {volume: 0.2})
+        bullet.doExplosion()
         player.updateHealth()
     }
 
     private playerBulletHitEnemy(bullet: any, enemy: any): void {
-        bullet.destroy()
+        this.sound.play('hit-tank', {volume: 0.2})
+        bullet.doExplosion()
         enemy.updateHealth()
     }
 
@@ -191,7 +154,6 @@ export default class GameplayScene extends Phaser.Scene {
                 fx.progress = progress
             },
         })
-        console.log(12)
     }
 
     public startPauseScene(): void {

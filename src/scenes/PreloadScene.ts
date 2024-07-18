@@ -47,9 +47,59 @@ export default class PreloadScene extends Phaser.Scene {
         this.load.image('menu', './assets/images/menu.png')
         this.load.image('board', './assets/images/board-1.png')
         this.load.image('button', './assets/images/button.png')
+        this.load.image('track', './assets/images/effects/track/track.png')
+        this.load.image('banner', './assets/images/banner.png')
+        this.load.image('muted', './assets/images/muted.png')
+        this.load.image('unmuted', './assets/images/unmuted.png')
+        this.load.image('arrow', './assets/images/arrow.png')
+
+        this.load.atlas(
+            'bullet-explosion',
+            './assets/images/effects/bullet-explosion/bullet-explosion.png',
+            './assets/images/effects/bullet-explosion/bullet-explosion.json'
+        )
+        this.load.atlas(
+            'gun-flash',
+            './assets/images/effects/gun-flash/gun-flash.png',
+            './assets/images/effects/gun-flash/gun-flash.json'
+        )
+
+        this.load.audio('tank-shooting', './assets/audios/tank-shooting.mp3')
+        this.load.audio('hit-obstacle', './assets/audios/hit-obstacle.mp3')
+        this.load.audio('hit-tank', './assets/audios/hit-tank.mp3')
+        this.load.audio('click-down', './assets/audios/click-down.mp3')
+        this.load.audio('click-up', './assets/audios/click-up.mp3')
     }
 
     public create(): void {
+        this.anims.create({
+            key: 'bullet-explosion',
+            frames: this.anims.generateFrameNames('bullet-explosion', {
+                prefix: 'bullet-explosion-',
+                start: 1,
+                end: 8,
+            }),
+            frameRate: 30,
+            hideOnComplete: true,
+        })
+
+        this.anims.create({
+            key: 'gun-flash',
+            frames: this.anims.generateFrameNames('gun-flash', {
+                prefix: 'gun-flash-',
+                start: 1,
+                end: 5,
+            }),
+            frameRate: 20,
+            hideOnComplete: true,
+        })
+
+        this.sound.add('tank-shooting')
+        this.sound.add('hit-obstacle')
+        this.sound.add('hit-tank')
+        this.sound.add('click-down')
+        this.sound.add('click-up')
+
         this.scene.start('menu')
     }
 

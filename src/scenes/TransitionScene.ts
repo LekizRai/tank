@@ -10,7 +10,7 @@ export default class TransitionScene extends Phaser.Scene {
 
     public preload(): void {}
     public create(): void {
-        this.leftDoor = this.add.image(-consts.GAME_WIDTH, 0, 'door').setOrigin(0)
+        this.leftDoor = this.add.image(-consts.GAME_WIDTH - 10, 0, 'door').setOrigin(0)
         this.rightDoor = this.add.image(consts.GAME_WIDTH, 0, 'door').setOrigin(0)
     }
 
@@ -18,14 +18,14 @@ export default class TransitionScene extends Phaser.Scene {
         this.add.tween({
             targets: this.leftDoor,
             x: -consts.GAME_WIDTH / 2,
-            duration: 600,
+            duration: 500,
             ease: Phaser.Math.Easing.Expo.In,
             onComplete: () => {
                 this.add.tween({
                     targets: this.leftDoor,
                     x: -2000,
-                    delay: 300,
-                    duration: 600,
+                    delay: 600,
+                    duration: 500,
                     ease: Phaser.Math.Easing.Expo.In,
                 })
             },
@@ -34,14 +34,14 @@ export default class TransitionScene extends Phaser.Scene {
         this.add.tween({
             targets: this.rightDoor,
             x: consts.GAME_WIDTH / 2,
-            duration: 600,
+            duration: 500,
             ease: Phaser.Math.Easing.Expo.In,
             onComplete: () => {
                 this.add.tween({
                     targets: this.rightDoor,
                     x: 2000,
-                    delay: 300,
-                    duration: 600,
+                    delay: 600,
+                    duration: 500,
                     ease: Phaser.Math.Easing.Expo.In,
                 })
             },

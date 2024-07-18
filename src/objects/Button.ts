@@ -1,6 +1,7 @@
 export default class Button extends Phaser.GameObjects.Container {
     private texture: Phaser.GameObjects.Image
     private text: Phaser.GameObjects.BitmapText
+    private glow: Phaser.FX.Glow
     private isDown: boolean
 
     constructor(
@@ -26,6 +27,7 @@ export default class Button extends Phaser.GameObjects.Container {
                 this.setText(text)
             }
         }
+        this.glow = this.postFX?.addGlow(0xffffff, 0)
 
         this.scene.add.existing(this)
 
@@ -47,6 +49,40 @@ export default class Button extends Phaser.GameObjects.Container {
         }
         this.text.setX(-this.text.width / 2)
         this.text.setY(-this.text.height / 2.5)
+    }
+
+    public setTexture(key: string): void {
+        this.texture.setTexture(key)
+    }
+
+    public enableGlow(status: boolean, strength: number = 8): void {
+        if (status) {
+            this.glow.outerStrength = strength
+        } else {
+            this.glow.outerStrength = 0
+        }
+    }
+
+    public setGlowColor(color: number): void {
+        this.glow.color = color
+    }
+
+    public fade(alpha: number = 0.5, duration: number = 200, delay: number = 0): void {
+        this.scene.add.tween({
+            targets: this,
+            alpha: alpha,
+            duration: duration,
+            delay: delay,
+        })
+    }
+
+    public resize(scale: number = 0.8, duration: number = 200, delay: number = 0): void {
+        this.scene.add.tween({
+            targets: this,
+            scale: scale,
+            duration: duration,
+            delay: delay,
+        })
     }
 
     public onOver(callback: () => void): void {

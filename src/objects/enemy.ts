@@ -127,6 +127,8 @@
 
 import Bullet from './Bullet'
 import IImageConstructor from '../interfaces/image.interface'
+import GameEventEmitter from './GameEventEmitter'
+import ScoreManager from './ScoreManager'
 
 export default class Enemy extends Phaser.GameObjects.Container {
     body: Phaser.Physics.Arcade.Body
@@ -156,6 +158,8 @@ export default class Enemy extends Phaser.GameObjects.Container {
     private shootingKey: Phaser.Input.Keyboard.Key
     private pointer: Phaser.Input.Pointer
 
+    private eventEmitter: GameEventEmitter
+
     public getBullets(): Phaser.GameObjects.Group {
         return this.bullets
     }
@@ -165,9 +169,25 @@ export default class Enemy extends Phaser.GameObjects.Container {
 
         this.initTank()
         this.scene.add.existing(this)
+
+        this.eventEmitter = GameEventEmitter.getInstance()
     }
 
     private initTank() {
+        // tweens
+        this.scene.tweens.add({
+            targets: this,
+            props: { y: this.y - 200 },
+            delay: 0,
+            duration: 2000,
+            ease: 'Linear',
+            easeParams: null,
+            hold: 0,
+            repeat: -1,
+            repeatDelay: 0,
+            yoyo: true,
+        })
+
         // variables
         this.health = 1
         this.lastShoot = 0
@@ -220,6 +240,8 @@ export default class Enemy extends Phaser.GameObjects.Container {
 
         // physics
         this.scene.physics.world.enable(this)
+        this.setSize(65, 100)
+        this.body.setSize(60, 100)
     }
 
     update(): void {
@@ -238,19 +260,6 @@ export default class Enemy extends Phaser.GameObjects.Container {
 
     private handleShooting(): void {
         // this.scene.cameras.main.shake(20, 0.005)
-        this.scene.tweens.add({
-            targets: this,
-            props: { alpha: 0.8 },
-            delay: 0,
-            duration: 5,
-            ease: 'Power1',
-            easeParams: null,
-            hold: 0,
-            repeat: 0,
-            repeatDelay: 0,
-            yoyo: true,
-            paused: false,
-        })
 
         if (this.scene.time.now > this.lastShoot) {
             if (this.bullets.getLength() < 10) {
@@ -277,7 +286,7 @@ export default class Enemy extends Phaser.GameObjects.Container {
 
     private redrawLifebar(): void {
         this.lifeBar.clear()
-        this.lifeBar.fillStyle(0xe66a28, 1)
+        this.lifeBar.fillStyle(0xff0000, 1)
         this.lifeBar.fillRect(-50, 100, 100 * this.health, 15)
         this.lifeBar.lineStyle(2, 0xffffff)
         this.lifeBar.strokeRect(-50, 100, 100, 15)
@@ -290,6 +299,8 @@ export default class Enemy extends Phaser.GameObjects.Container {
             this.redrawLifebar()
         } else {
             this.health = 0
+            ScoreManager.addScore(25)
+            this.eventEmitter.emit('enemydead')
             this.active = false
         }
     }

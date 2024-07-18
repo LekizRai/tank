@@ -2,6 +2,7 @@ type GameObjectHaveSize =
     | Phaser.GameObjects.Image
     | Phaser.GameObjects.Sprite
     | Phaser.GameObjects.Text
+    | Phaser.GameObjects.BitmapText
     | Phaser.GameObjects.Container
     | Phaser.GameObjects.Zone
 

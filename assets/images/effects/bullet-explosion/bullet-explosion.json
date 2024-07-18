@@ -1,0 +1,112 @@
+{
+    "frames": [
+        {
+            "filename": "bullet-explosion-5",
+            "frame": {
+                "w": 256,
+                "h": 256,
+                "x": 0,
+                "y": 0
+            },
+            "anchor": {
+                "x": 0.5,
+                "y": 0.5
+            }
+        },
+        {
+            "filename": "bullet-explosion-4",
+            "frame": {
+                "w": 256,
+                "h": 256,
+                "x": 256,
+                "y": 0
+            },
+            "anchor": {
+                "x": 0.5,
+                "y": 0.5
+            }
+        },
+        {
+            "filename": "bullet-explosion-3",
+            "frame": {
+                "w": 256,
+                "h": 256,
+                "x": 0,
+                "y": 256
+            },
+            "anchor": {
+                "x": 0.5,
+                "y": 0.5
+            }
+        },
+        {
+            "filename": "bullet-explosion-2",
+            "frame": {
+                "w": 256,
+                "h": 256,
+                "x": 256,
+                "y": 256
+            },
+            "anchor": {
+                "x": 0.5,
+                "y": 0.5
+            }
+        },
+        {
+            "filename": "bullet-explosion-1",
+            "frame": {
+                "w": 256,
+                "h": 256,
+                "x": 512,
+                "y": 0
+            },
+            "anchor": {
+                "x": 0.5,
+                "y": 0.5
+            }
+        },
+        {
+            "filename": "bullet-explosion-8",
+            "frame": {
+                "w": 256,
+                "h": 256,
+                "x": 512,
+                "y": 256
+            },
+            "anchor": {
+                "x": 0.5,
+                "y": 0.5
+            }
+        },
+        {
+            "filename": "bullet-explosion-7",
+            "frame": {
+                "w": 256,
+                "h": 256,
+                "x": 0,
+                "y": 512
+            },
+            "anchor": {
+                "x": 0.5,
+                "y": 0.5
+            }
+        },
+        {
+            "filename": "bullet-explosion-6",
+            "frame": {
+                "w": 256,
+                "h": 256,
+                "x": 256,
+                "y": 512
+            },
+            "anchor": {
+                "x": 0.5,
+                "y": 0.5
+            }
+        }
+    ],
+    "meta": {
+        "description": "Atlas generado con Atlas Packer Gamma V2",
+        "web": "https://gammafp.github.io/atlas-packer-phaser/"
+    }
+}

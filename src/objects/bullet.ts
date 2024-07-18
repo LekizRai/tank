@@ -1,6 +1,6 @@
 import IBulletConstructor from '../interfaces/bullet.interface'
 
-export default class Bullet extends Phaser.GameObjects.Image {
+export default class Bullet extends Phaser.GameObjects.Sprite {
     body: Phaser.Physics.Arcade.Body
 
     private bulletSpeed: number
@@ -11,6 +11,8 @@ export default class Bullet extends Phaser.GameObjects.Image {
         this.rotation = aParams.rotation
         this.initImage()
         this.scene.add.existing(this)
+
+        this.setScale(0.7)
     }
 
     private initImage(): void {
@@ -31,5 +33,13 @@ export default class Bullet extends Phaser.GameObjects.Image {
         )
     }
 
-    update(): void {}
+    public doExplosion(): void {
+        this.body.setEnable(false)
+        this.play('bullet-explosion').setScale(0.3).on('animationcomplete', () => {
+            this.destroy()
+        })
+        // this.destroy()
+    }
+
+    public update(): void {}
 }

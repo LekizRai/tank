@@ -1,5 +1,6 @@
 import consts from '../consts/consts'
 import Button from '../objects/Button'
+import GameEventEmitter from '../objects/GameEventEmitter'
 import GameplayScene from '../scenes/GameplayScene'
 import utils from '../utils/utils'
 
@@ -7,6 +8,8 @@ export default class PauseUI extends Phaser.GameObjects.Container {
     private pauseButton: Button
     private controlBoard: Phaser.GameObjects.Container
     private screenZone: Phaser.GameObjects.Zone
+
+    private eventEmitter: GameEventEmitter
 
     constructor(scene: Phaser.Scene, x: number, y: number) {
         super(scene, x, y)
@@ -18,6 +21,7 @@ export default class PauseUI extends Phaser.GameObjects.Container {
         )
         this.init()
         this.scene.add.existing(this)
+        this.eventEmitter = GameEventEmitter.getInstance()
     }
 
     private init(): void {
@@ -34,6 +38,41 @@ export default class PauseUI extends Phaser.GameObjects.Container {
 
         const board = this.scene.add.image(0, 0, 'board')
 
+        const banner = new Button(this.scene, 0, 0, 'banner', 'PAUSE', 100)
+        utils.alignTopCenter(banner, board, 0, -100)
+
+        const muteIcon = new Button(this.scene, 0, 0, 'unmuted').setScale(0.6)
+        let isMuted: boolean = false
+        muteIcon.onClick(() => {
+            if (!isMuted) {
+                isMuted = true
+                muteIcon.setTexture('muted')
+                this.scene.sound.setVolume(0)
+                let sound1 = this.scene.sound.get('click-down') as Phaser.Sound.HTML5AudioSound
+                sound1.setVolume(1)
+                let sound2 = this.scene.sound.get('click-up') as Phaser.Sound.HTML5AudioSound
+                sound2.setVolume(1)
+            }
+            else {
+                isMuted = false
+                muteIcon.setTexture('unmuted')
+                this.scene.sound.setVolume(1)
+            }
+        })
+        muteIcon.onOver(() => {
+            muteIcon.enableGlow(true)
+        })
+        muteIcon.onOut(() => {
+            muteIcon.enableGlow(false)
+        })
+        muteIcon.onDown(() => {
+            this.scene.sound.play('click-down')
+        })
+        muteIcon.onUp(() => {
+            this.scene.sound.play('click-up')
+        })
+        utils.alignCenter(muteIcon, board)
+
         const continueButton = new Button(this.scene, 0, 0, 'button', 'CONTINUE', 100).setScale(0.6)
         continueButton.onClick(() => {
             this.controlBoard.setVisible(false)
@@ -41,43 +80,47 @@ export default class PauseUI extends Phaser.GameObjects.Container {
             this.scene.scene.resume('gameplay')
         })
         continueButton.onOver(() => {
-            this.scene.add.tween({
-                targets: continueButton,
-                scale: 0.5,
-                duration: 200,
-            })
+            continueButton.enableGlow(true)
         })
         continueButton.onOut(() => {
-            this.scene.add.tween({
-                targets: continueButton,
-                scale: 0.6,
-                duration: 200,
-            })
+            continueButton.enableGlow(false)
+            continueButton.fade(1, 0)
+        })
+        continueButton.onDown(() => {
+            this.scene.sound.play('click-down')
+            continueButton.fade(0.8, 0)
+        })
+        continueButton.onUp(() => {
+            this.scene.sound.play('click-up')
+            continueButton.fade(1, 0)
         })
         utils.alignCenter(continueButton, board, -300, 200)
 
         const restartButton = new Button(this.scene, 0, 0, 'button', 'RESTART', 100).setScale(0.6)
         restartButton.onClick(() => {
             this.scene.scene.start('gameplay')
-            this.scene.scene.get('menu').events.emit('transitiondone')
+            this.eventEmitter.emit('transitiondone')
         })
         restartButton.onOver(() => {
-            this.scene.add.tween({
-                targets: restartButton,
-                scale: 0.5,
-                duration: 200,
-            })
+            restartButton.enableGlow(true)
         })
         restartButton.onOut(() => {
-            this.scene.add.tween({
-                targets: restartButton,
-                scale: 0.6,
-                duration: 200,
-            })
+            restartButton.enableGlow(false)
+            restartButton.fade(1, 0)
+        })
+        restartButton.onDown(() => {
+            this.scene.sound.play('click-down')
+            restartButton.fade(0.8, 0)
+        })
+        restartButton.onUp(() => {
+            this.scene.sound.play('click-up')
+            restartButton.fade(1, 0)
         })
         utils.alignCenter(restartButton, board, 300, 200)
 
         this.controlBoard.add(board)
+        this.controlBoard.add(banner)
+        this.controlBoard.add(muteIcon)
         this.controlBoard.add(continueButton)
         this.controlBoard.add(restartButton)
 

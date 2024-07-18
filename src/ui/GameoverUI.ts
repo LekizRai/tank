@@ -1,11 +1,16 @@
+import { Game } from 'phaser'
 import consts from '../consts/consts'
 import Button from '../objects/Button'
+import GameEventEmitter from '../objects/GameEventEmitter'
 import GameplayScene from '../scenes/GameplayScene'
 import utils from '../utils/utils'
+import ScoreManager from '../objects/ScoreManager'
 
 export default class GameoverUI extends Phaser.GameObjects.Container {
     private controlBoard: Phaser.GameObjects.Container
     private screenZone: Phaser.GameObjects.Zone
+
+    private eventEmitter: GameEventEmitter
 
     constructor(scene: Phaser.Scene, x: number, y: number) {
         super(scene, x, y)
@@ -17,6 +22,8 @@ export default class GameoverUI extends Phaser.GameObjects.Container {
         )
         this.init()
         this.scene.add.existing(this)
+
+        this.eventEmitter = GameEventEmitter.getInstance()
     }
 
     private init(): void {
@@ -24,26 +31,30 @@ export default class GameoverUI extends Phaser.GameObjects.Container {
 
         const board = this.scene.add.image(0, 0, 'board')
 
+        const banner = new Button(this.scene, 0, 0, 'banner', 'GAME OVER', 100)
+        utils.alignTopCenter(banner, board, 0, -100)
+
         const restartButton = new Button(this.scene, 0, 0, 'button', 'RESTART', 100).setScale(0.6)
         restartButton.onClick(() => {
             this.scene.scene.start('gameplay')
-            this.scene.scene.get('menu').events.emit('transitiondone')
+            this.eventEmitter.emit('transitiondone')
         })
         restartButton.onOver(() => {
-            this.scene.add.tween({
-                targets: restartButton,
-                scale: 0.5,
-                duration: 200,
-            })
+            restartButton.enableGlow(true)
         })
         restartButton.onOut(() => {
-            this.scene.add.tween({
-                targets: restartButton,
-                scale: 0.6,
-                duration: 200,
-            })
+            restartButton.enableGlow(false)
+            restartButton.fade(1, 0)
         })
-        utils.alignCenter(restartButton, board, -300, 200)
+        restartButton.onDown(() => {
+            this.scene.sound.play('click-down')
+            restartButton.fade(0.8, 0)
+        })
+        restartButton.onUp(() => {
+            this.scene.sound.play('click-up')
+            restartButton.fade(1, 0)
+        })
+        utils.alignCenter(restartButton, board, -300, 250)
 
         const menuButton = new Button(this.scene, 0, 0, 'button', 'HOME', 100).setScale(0.6)
         menuButton.onClick(() => {
@@ -54,24 +65,33 @@ export default class GameoverUI extends Phaser.GameObjects.Container {
             }
         })
         menuButton.onOver(() => {
-            this.scene.add.tween({
-                targets: menuButton,
-                scale: 0.5,
-                duration: 200,
-            })
+            menuButton.enableGlow(true)
         })
         menuButton.onOut(() => {
-            this.scene.add.tween({
-                targets: menuButton,
-                scale: 0.6,
-                duration: 200,
-            })
+            menuButton.enableGlow(false)
+            menuButton.fade(1, 0)
         })
-        utils.alignCenter(menuButton, board, 300, 200)
+        menuButton.onDown(() => {
+            this.scene.sound.play('click-down')
+            menuButton.fade(0.8, 0)
+        })
+        menuButton.onUp(() => {
+            this.scene.sound.play('click-up')
+            menuButton.fade(1, 0)
+        })
+        utils.alignCenter(menuButton, board, 300, 250)
+
+        const currentScore = this.scene.add.bitmapText(0, 0, 'font', 'SCORE: ' + String(ScoreManager.getCurrentScore()), 60, 1)
+        const highScore = this.scene.add.bitmapText(0, 0, 'font', 'HIGHSCORE: ' + String(ScoreManager.getHighScore()), 60, 1)
+        utils.alignCenter(currentScore, board, 0, -50)
+        utils.alignCenter(highScore, board, 0, 50)
 
         this.controlBoard.add(board)
+        this.controlBoard.add(banner)
         this.controlBoard.add(restartButton)
         this.controlBoard.add(menuButton)
+        this.controlBoard.add(currentScore)
+        this.controlBoard.add(highScore)
 
         this.add(this.controlBoard)
 

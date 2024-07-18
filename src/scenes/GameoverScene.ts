@@ -2,6 +2,7 @@ import GameoverUI from "../ui/GameoverUI"
 
 export default class GameoverScene extends Phaser.Scene {
     private gameoverUI: GameoverUI
+
     constructor() {
         super('gameover')
     }

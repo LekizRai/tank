@@ -1,4 +1,5 @@
 import consts from "../consts/consts"
+import GameEventEmitter from "../objects/GameEventEmitter"
 import TransitionScene from "./TransitionScene"
 
 export default class MenuScene extends Phaser.Scene {
@@ -8,12 +9,15 @@ export default class MenuScene extends Phaser.Scene {
     private leftDoor: Phaser.GameObjects.Image
     private rightDoor: Phaser.GameObjects.Image
 
+    private eventEmitter: GameEventEmitter
+
     constructor() {
         super('menu')
     }
 
     create(): void {
-        this.add.image(0, 0, 'background').setOrigin(0)
+        this.cameras.main.setBackgroundColor(0x000000)
+        // this.add.image(0, 0, 'background').setOrigin(0)
 
         const startKey = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.S)
         if (startKey) {
@@ -22,11 +26,11 @@ export default class MenuScene extends Phaser.Scene {
         }
 
         const phrase1 = this.add.bitmapText(
-            this.sys.canvas.width / 2 - 120,
-            this.sys.canvas.height / 2,
+            this.sys.canvas.width / 2 - 400,
+            this.sys.canvas.height / 2 + 100,
             'font',
-            'PRESS S TO PLAY',
-            30
+            'CLICK TO PLAY',
+            60
         )
         this.add.tween({
             targets: phrase1,
@@ -37,17 +41,19 @@ export default class MenuScene extends Phaser.Scene {
         })
 
         const phrase2 = this.add.bitmapText(
-            this.sys.canvas.width / 2 - 120,
+            this.sys.canvas.width / 2 - 400,
             this.sys.canvas.height / 2 - 100,
             'font',
             'TANK',
-            100
+            200
         )
 
-        this.input.keyboard?.once('keydown-S', () => {
+        this.input.once('pointerdown', () => {
             this.doTransition('menu')
         })
+
         this.scene.launch('transition')
+        this.eventEmitter = GameEventEmitter.getInstance()
     }
 
     update(): void {}
@@ -65,7 +71,7 @@ export default class MenuScene extends Phaser.Scene {
                 moveBelow: true,
                 onUpdate: (progress: number) => {
                     if (progress == 1) {
-                        this.events.emit('transitiondone')
+                        this.eventEmitter.emit('transitiondone')
                     }
                     fx.progress = progress
                 },
