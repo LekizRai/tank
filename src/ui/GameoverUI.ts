@@ -36,6 +36,18 @@ export default class GameoverUI extends Phaser.GameObjects.Container {
 
         const restartButton = new Button(this.scene, 0, 0, 'button', 'RESTART', 100).setScale(0.6)
         restartButton.onClick(() => {
+            this.controlBoard.setScale(0)
+            this.controlBoard.setAngle(-180)
+            this.scene.add.tween({
+                targets: this.controlBoard,
+                angle: 0,
+                scale: 0.8,
+                duration: 200,
+                onComplete: () => {
+                    this.controlBoard.setVisible(false)
+                },
+            })
+
             this.scene.scene.start('gameplay')
             this.eventEmitter.emit('transitiondone')
         })
@@ -58,6 +70,18 @@ export default class GameoverUI extends Phaser.GameObjects.Container {
 
         const menuButton = new Button(this.scene, 0, 0, 'button', 'HOME', 100).setScale(0.6)
         menuButton.onClick(() => {
+            this.controlBoard.setScale(0)
+            this.controlBoard.setAngle(-180)
+            this.scene.add.tween({
+                targets: this.controlBoard,
+                angle: 0,
+                scale: 0.8,
+                duration: 200,
+                onComplete: () => {
+                    this.controlBoard.setVisible(false)
+                },
+            })
+
             this.scene.scene.stop('gameover')
             const gameplayScene = this.scene.scene.get('gameplay')
             if (gameplayScene instanceof GameplayScene) {
@@ -81,8 +105,22 @@ export default class GameoverUI extends Phaser.GameObjects.Container {
         })
         utils.alignCenter(menuButton, board, 300, 250)
 
-        const currentScore = this.scene.add.bitmapText(0, 0, 'font', 'SCORE: ' + String(ScoreManager.getCurrentScore()), 60, 1)
-        const highScore = this.scene.add.bitmapText(0, 0, 'font', 'HIGHSCORE: ' + String(ScoreManager.getHighScore()), 60, 1)
+        const currentScore = this.scene.add.bitmapText(
+            0,
+            0,
+            'font',
+            'SCORE: ' + String(ScoreManager.getCurrentScore()),
+            60,
+            1
+        )
+        const highScore = this.scene.add.bitmapText(
+            0,
+            0,
+            'font',
+            'HIGHSCORE: ' + String(ScoreManager.getHighScore()),
+            60,
+            1
+        )
         utils.alignCenter(currentScore, board, 0, -50)
         utils.alignCenter(highScore, board, 0, 50)
 

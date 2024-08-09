@@ -28,9 +28,41 @@ export default class PauseUI extends Phaser.GameObjects.Container {
         // Pause button
         this.pauseButton = new Button(this.scene, 100, 100, 'pause', '').setScale(0.7)
         this.pauseButton.onClick(() => {
+            this.controlBoard.setScale(0)
+            this.controlBoard.setAngle(-180)
             this.controlBoard.setVisible(true)
-            this.pauseButton.setVisible(false)
+            this.scene.add.tween({
+                targets: this.controlBoard,
+                angle: 0,
+                scale: 0.8,
+                duration: 200,
+            })
+
+            this.scene.add.tween({
+                targets: this.pauseButton,
+                scale: 0,
+                duration: 200,
+                onComplete: () => {
+                    this.pauseButton.setVisible(false)
+                },
+            })
+
             this.scene.scene.pause('gameplay')
+        })
+        this.pauseButton.onOver(() => {
+            this.pauseButton.enableGlow(true)
+        })
+        this.pauseButton.onOut(() => {
+            this.pauseButton.enableGlow(false)
+            this.pauseButton.fade(1, 0)
+        })
+        this.pauseButton.onDown(() => {
+            this.scene.sound.play('click-down')
+            this.pauseButton.fade(0.8, 0)
+        })
+        this.pauseButton.onUp(() => {
+            this.scene.sound.play('click-up')
+            this.pauseButton.fade(1, 0)
         })
 
         // Control board
@@ -52,8 +84,7 @@ export default class PauseUI extends Phaser.GameObjects.Container {
                 sound1.setVolume(1)
                 let sound2 = this.scene.sound.get('click-up') as Phaser.Sound.HTML5AudioSound
                 sound2.setVolume(1)
-            }
-            else {
+            } else {
                 isMuted = false
                 muteIcon.setTexture('unmuted')
                 this.scene.sound.setVolume(1)
@@ -75,8 +106,23 @@ export default class PauseUI extends Phaser.GameObjects.Container {
 
         const continueButton = new Button(this.scene, 0, 0, 'button', 'CONTINUE', 100).setScale(0.6)
         continueButton.onClick(() => {
-            this.controlBoard.setVisible(false)
+            this.scene.add.tween({
+                targets: this.controlBoard,
+                angle: 180,
+                scale: 0,
+                duration: 200,
+                onComplete: () => {
+                    this.controlBoard.setVisible(false)
+                },
+            })
+
             this.pauseButton.setVisible(true)
+            this.scene.add.tween({
+                targets: this.pauseButton,
+                scale: 0.7,
+                duration: 200,
+            })
+
             this.scene.scene.resume('gameplay')
         })
         continueButton.onOver(() => {
@@ -98,6 +144,23 @@ export default class PauseUI extends Phaser.GameObjects.Container {
 
         const restartButton = new Button(this.scene, 0, 0, 'button', 'RESTART', 100).setScale(0.6)
         restartButton.onClick(() => {
+            this.scene.add.tween({
+                targets: this.controlBoard,
+                angle: 180,
+                scale: 0,
+                duration: 200,
+                onComplete: () => {
+                    this.controlBoard.setVisible(false)
+                },
+            })
+
+            this.pauseButton.setVisible(true)
+            this.scene.add.tween({
+                targets: this.pauseButton,
+                scale: 0.7,
+                duration: 200,
+            })
+
             this.scene.scene.start('gameplay')
             this.eventEmitter.emit('transitiondone')
         })
